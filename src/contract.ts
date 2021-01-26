@@ -249,8 +249,16 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
   /** Propose Function */
   if (input.function === 'propose') {
     const voteType = input.type;
-
     const note = input.note;
+
+    // Market Info
+    const tweet = input.tweet;
+    const tweetByUsername = input.tweetByUsername;
+    const tweetByPhoto = input.tweetByPhoto;
+    const tweetCreated = input.tweetCreated;
+    const tweetDate = input.tweetDate;
+    const tweetLink = input.tweetLink;
+
     if(typeof note !== 'string') {
       throw new ContractError('Note format not recognized.');
     }
@@ -390,6 +398,24 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       votes.push(vote);
     } else if (voteType === 'indicative') {
       votes.push(vote);
+    } else if (voteType === 'createMarket') {
+      let market: VoteInterface = {
+        nays: 0,
+        start: +SmartWeave.block.height,
+        status: 'active',
+        totalWeight,
+        tweet,
+        tweetByUsername,
+        tweetByPhoto,
+        tweetCreated,
+        tweetDate,
+        tweetLink,
+        type: voteType,
+        voted: [],
+        yays: 0,
+      };
+
+      votes.push(market);
     } else {
       throw new ContractError('Invalid vote type.');
     }

@@ -69,6 +69,14 @@ export interface VoteInterface {
   voted?: string[];
   start?: number;
   lockLength?: number;
+
+  // Market Details
+  tweet?: string;
+  tweetByUsername?: string;
+  tweetByPhoto?: string;
+  tweetCreated?: string;
+  tweetDate?: string;
+  tweetLink?: string;
 }
 
 export interface ResultInterface {
