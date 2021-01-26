@@ -1,11 +1,11 @@
 {
-  "name": "My DAO Name",
-  "ticker": "TOK",
+  "name": "ConsensusTest1",
+  "ticker": "CT1",
   "balances": {
-    "uhE-QeYS8i4pmUtnxQyHD7dzXFNaJ9oMK-IM-QPNY6M": 10000000
+    "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk": 10000000
   },
   "vault": {
-    "uhE-QeYS8i4pmUtnxQyHD7dzXFNaJ9oMK-IM-QPNY6M": [{
+    "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk": [{
       "balance": 1000,
       "end": 100,
       "start": 0
@@ -16,8 +16,8 @@
   "settings": [
     ["quorum", 0.5],
     ["support", 0.5],
-    ["voteLength", 2000],
+    ["voteLength", 2160],
     ["lockMinLength", 5],
-    ["lockMaxLength",720]
+    ["lockMaxLength",2160]
   ]
 }
