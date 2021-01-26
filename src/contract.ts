@@ -256,7 +256,6 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     const tweetByUsername = input.tweetByUsername;
     const tweetByPhoto = input.tweetByPhoto;
     const tweetCreated = input.tweetCreated;
-    const tweetDate = input.tweetDate;
     const tweetLink = input.tweetLink;
 
     if(typeof note !== 'string') {
@@ -408,7 +407,6 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
         tweetByUsername,
         tweetByPhoto,
         tweetCreated,
-        tweetDate,
         tweetLink,
         type: voteType,
         voted: [],

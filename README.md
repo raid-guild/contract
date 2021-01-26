@@ -1,3 +1,5 @@
+Latest contract deployment: `bJjnJkQshDBnlfm4ijVc2N2PJIV9bdPl-lYXG4UaShI`
+
 # Community Contract Specs
 
 [![Gitopia](https://img.shields.io/endpoint?style=&url=https://gitopia.org/mirror-badge.json)](https://gitopia.org/?#/BPr7vrFduuQqqVMu_tftxsScTKUq9ke0rx4q5C9ieQU/community-contract)

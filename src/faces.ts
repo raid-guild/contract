@@ -75,7 +75,6 @@ export interface VoteInterface {
   tweetByUsername?: string;
   tweetByPhoto?: string;
   tweetCreated?: string;
-  tweetDate?: string;
   tweetLink?: string;
 }
 
