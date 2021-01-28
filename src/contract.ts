@@ -252,9 +252,8 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     const note = input.note;
 
     // Market Info
-    const tweet = input.tweet;
-    const tweetByUsername = input.tweetByUsername;
-    const tweetByPhoto = input.tweetByPhoto;
+    const tweetUsername = input.tweetUsername;
+    const tweetPhoto = input.tweetPhoto;
     const tweetCreated = input.tweetCreated;
     const tweetLink = input.tweetLink;
 
@@ -400,12 +399,12 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     } else if (voteType === 'createMarket') {
       let market: VoteInterface = {
         nays: 0,
+        note,
         start: +SmartWeave.block.height,
         status: 'active',
         totalWeight,
-        tweet,
-        tweetByUsername,
-        tweetByPhoto,
+        tweetUsername,
+        tweetPhoto,
         tweetCreated,
         tweetLink,
         type: voteType,

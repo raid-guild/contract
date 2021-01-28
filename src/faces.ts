@@ -71,9 +71,8 @@ export interface VoteInterface {
   lockLength?: number;
 
   // Market Details
-  tweet?: string;
-  tweetByUsername?: string;
-  tweetByPhoto?: string;
+  tweetUsername?: string;
+  tweetPhoto?: string;
   tweetCreated?: string;
   tweetLink?: string;
 }

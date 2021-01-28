@@ -77,6 +77,11 @@ interface VoteInterface {
   voted?: string[];
   start?: number;
   lockLength?: number;
+  tweet?: string;
+  tweetByUsername?: string;
+  tweetByPhoto?: string;
+  tweetCreated?: string;
+  tweetLink?: string;
 }
 ```
 
@@ -198,6 +203,14 @@ Holders are able to propose a new vote, this will create a new proposal.
   To send a general non-fixed proposal. A yes/no question.
   Requires:
   - **note**: Proposal description
+- **CreateMarket**
+  To create a new ConsensusTrade assertion market.
+  const voteType = input.type;
+    **note**: The text of the tweet
+    **tweetUsername**: Username of the user who made the initial tweet
+    **tweetPhoto**: Photo of the user who made the initial tweet
+    **tweetCreated**: Timestamp of when the tweet was created
+    **tweetLink**: URL of the tweet
 
 Allowed keys for **set** are:
 - quorum
