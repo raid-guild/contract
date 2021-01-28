@@ -205,12 +205,11 @@ Holders are able to propose a new vote, this will create a new proposal.
   - **note**: Proposal description
 - **CreateMarket**
   To create a new ConsensusTrade assertion market.
-  const voteType = input.type;
-    **note**: The text of the tweet
-    **tweetUsername**: Username of the user who made the initial tweet
-    **tweetPhoto**: Photo of the user who made the initial tweet
-    **tweetCreated**: Timestamp of when the tweet was created
-    **tweetLink**: URL of the tweet
+  - **note**: The text of the tweet
+  - **tweetUsername**: Username of the user who made the initial tweet
+  - **tweetPhoto**: Photo of the user who made the initial tweet
+  - **tweetCreated**: Timestamp of when the tweet was created
+  - **tweetLink**: URL of the tweet
 
 Allowed keys for **set** are:
 - quorum
