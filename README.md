@@ -1,4 +1,5 @@
 Latest contract deployment: `95FET2dickp8y1a6E2uRqrCQXs3N8jgeN2Y9aAUyOWI`
+Test contract deployment: `1kKyFOGOW8db1ahA8FVLOE29praXGXwXgRqcXQR_aUg`
 
 # Community Contract Specs
 
@@ -205,6 +206,7 @@ Holders are able to propose a new vote, this will create a new proposal.
   - **note**: Proposal description
 - **CreateMarket**
   To create a new ConsensusTrade assertion market.
+  Requires:
   - **note**: The text of the tweet
   - **tweetUsername**: Username of the user who made the initial tweet
   - **tweetPhoto**: Photo of the user who made the initial tweet

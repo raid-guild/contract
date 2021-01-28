@@ -51,6 +51,11 @@ export interface ExtendInterface {
 export interface InputInterface extends VoteInterface, ExtendInterface {
   function: GetFunctionType | SetFunctionType;
   cast?: string;
+  stakedAmount?: number;
+}
+
+export interface StakeInterface {
+  [key: string]: number;
 }
 
 export interface VoteInterface {
@@ -71,6 +76,7 @@ export interface VoteInterface {
   lockLength?: number;
 
   // Market Details
+  staked?: StakeInterface;
   tweetUsername?: string;
   tweetPhoto?: string;
   tweetCreated?: string;
@@ -86,4 +92,4 @@ export interface ResultInterface {
 export type VoteStatus = 'active' | 'quorumFailed' | 'passed' | 'failed';
 export type VoteType = 'mint' | 'mintLocked' | 'burnVault' | 'indicative' | 'set';
 export type GetFunctionType = 'balance' | 'unlockedBalance' | 'vaultBalance' | 'role';
-export type SetFunctionType = 'transfer' | 'transferLocked' | 'vote' | 'propose' | 'finalize' | 'lock' | 'increaseVault' | 'unlock' | 'extend';
+export type SetFunctionType = 'transfer' | 'transferLocked' | 'vote' | 'stake' | 'propose' | 'finalize' | 'lock' | 'increaseVault' | 'unlock' | 'extend';

@@ -424,7 +424,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
         tweetCreated,
         tweetLink,
         type: voteType,
-        voted: [],
+        staked: {},
         yays: 0,
       };
 
@@ -480,6 +480,57 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     vote.voted.push(caller);
     return { state };
   }
+
+  /** Stake Function */
+  if (input.function === 'stake') {
+    const id = input.id;
+    const cast = input.cast;
+    const stakedAmount = input.stakedAmount;
+
+    if (!Number.isInteger(id)) {
+      throw new ContractError('Invalid value for "id". Must be an integer.');
+    }
+
+    if (!Number.isInteger(stakedAmount)) {
+      throw new ContractError('Invalid value for "stakedAmount". Must be an integer.');
+    }
+
+    const vote = votes[id];
+
+    let stakerBalance = 0;
+    if (caller in balances) {
+        stakerBalance = balances[caller]
+    }
+
+    if (stakerBalance <= 0) {
+      throw new ContractError('Caller does not have high enough balance for this stake.');
+    }
+
+    if (stakerBalance < stakedAmount) {
+      throw new ContractError('Caller does not have high enough balance for this stake.');
+    }
+
+    if (caller in vote.staked) {
+      throw new ContractError('Caller has already staked.');
+    }
+
+    if (+SmartWeave.block.height >= (vote.start + settings.get('voteLength'))) {
+      throw new ContractError('Vote has already concluded.');
+    }
+
+    if (cast === 'yay') {
+      vote.yays += stakerBalance;
+    } else if (cast === 'nay') {
+      vote.nays += stakerBalance;
+    } else {
+      throw new ContractError('Vote cast type unrecognised.');
+    }
+
+    vote.staked[caller] = stakedAmount;
+    balances[caller] -= stakedAmount;
+    return { state };
+  }
+
 
   /** Finalize Function */
   if (input.function === 'finalize') {
