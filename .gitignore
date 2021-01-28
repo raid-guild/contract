@@ -1,4 +1,5 @@
 node_modules
 dist
+wallet
 __tests__/*.json
 /coverage

@@ -261,6 +261,22 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('Note format not recognized.');
     }
 
+    if(typeof tweetUsername !== 'string') {
+      throw new ContractError('tweetUsername format not recognized.');
+    }
+
+    if(typeof tweetPhoto !== 'string') {
+      throw new ContractError('tweetPhoto format not recognized.');
+    }
+
+    if(typeof tweetCreated !== 'string') {
+      throw new ContractError('tweetCreated format not recognized.');
+    }
+
+    if(typeof tweetLink !== 'string') {
+      throw new ContractError('tweetLink format not recognized.');
+    }
+
     if(!(caller in vault)) {
       throw new ContractError('Caller needs to have locked balances.');
     }
