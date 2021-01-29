@@ -26,7 +26,7 @@ The community state has the following default structure:
     }]
   },
   votes: VoteInterface[], 
-  "markets": VoteInterface[],
+  markets: VoteInterface[],
   roles: {
       [key: string]: string
   },
