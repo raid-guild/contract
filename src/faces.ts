@@ -4,9 +4,11 @@ export interface StateInterface {
   balances: BalancesInterface;
   vault: VaultInterface;
   votes: VoteInterface[];
+  markets: VoteInterface[];
   roles: RoleInterface;
   settings: [string, any][];
   extensions: ExtensionInterface[];
+  logs: string[];
 }
 
 export interface RoleInterface {
@@ -54,8 +56,10 @@ export interface InputInterface extends VoteInterface, ExtendInterface {
   stakedAmount?: number;
 }
 
-export interface StakeInterface {
-  [key: string]: number;
+export interface StakedInterface {
+  address: string;
+  amount: number;
+  cast: string;
 }
 
 export interface VoteInterface {
@@ -76,7 +80,8 @@ export interface VoteInterface {
   lockLength?: number;
 
   // Market Details
-  staked?: StakeInterface;
+  staked?: StakedInterface[];
+  tweet?: string;
   tweetUsername?: string;
   tweetPhoto?: string;
   tweetCreated?: string;
@@ -92,4 +97,4 @@ export interface ResultInterface {
 export type VoteStatus = 'active' | 'quorumFailed' | 'passed' | 'failed';
 export type VoteType = 'mint' | 'mintLocked' | 'burnVault' | 'indicative' | 'set';
 export type GetFunctionType = 'balance' | 'unlockedBalance' | 'vaultBalance' | 'role';
-export type SetFunctionType = 'transfer' | 'transferLocked' | 'vote' | 'stake' | 'propose' | 'finalize' | 'lock' | 'increaseVault' | 'unlock' | 'extend';
+export type SetFunctionType = 'transfer' | 'transferLocked' | 'vote' | 'stake' | 'propose' | 'createMarket' | 'finalize' | 'disburse' | 'lock' | 'increaseVault' | 'unlock' | 'extend';

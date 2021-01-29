@@ -6,7 +6,8 @@ import {
   InputInterface,
   VaultInterface,
   VaultParamsInterface,
-  ExtensionInterface
+  ExtensionInterface,
+  StakedInterface
 } from "./faces";
 
 declare const ContractError: any;
@@ -17,9 +18,11 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
   const balances: BalancesInterface = state.balances;
   const vault: VaultInterface = state.vault;
   const votes: VoteInterface[] = state.votes;
+  const markets: VoteInterface[] = state.markets;
   const extensions: ExtensionInterface[] = state.extensions;
   const input: InputInterface = action.input;
   const caller: string = action.caller;
+  const logs: string[] = state.logs;
 
   /** Transfer Function */
   if (input.function === 'transfer') {
@@ -251,30 +254,8 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     const voteType = input.type;
     const note = input.note;
 
-    // Market Info
-    const tweetUsername = input.tweetUsername;
-    const tweetPhoto = input.tweetPhoto;
-    const tweetCreated = input.tweetCreated;
-    const tweetLink = input.tweetLink;
-
     if(typeof note !== 'string') {
       throw new ContractError('Note format not recognized.');
-    }
-
-    if(typeof tweetUsername !== 'string') {
-      throw new ContractError('tweetUsername format not recognized.');
-    }
-
-    if(typeof tweetPhoto !== 'string') {
-      throw new ContractError('tweetPhoto format not recognized.');
-    }
-
-    if(typeof tweetCreated !== 'string') {
-      throw new ContractError('tweetCreated format not recognized.');
-    }
-
-    if(typeof tweetLink !== 'string') {
-      throw new ContractError('tweetLink format not recognized.');
     }
 
     if(!(caller in vault)) {
@@ -412,26 +393,61 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       votes.push(vote);
     } else if (voteType === 'indicative') {
       votes.push(vote);
-    } else if (voteType === 'createMarket') {
-      let market: VoteInterface = {
-        nays: 0,
-        note,
-        start: +SmartWeave.block.height,
-        status: 'active',
-        totalWeight,
-        tweetUsername,
-        tweetPhoto,
-        tweetCreated,
-        tweetLink,
-        type: voteType,
-        staked: {},
-        yays: 0,
-      };
-
-      votes.push(market);
     } else {
       throw new ContractError('Invalid vote type.');
     }
+
+    return { state };
+  }
+
+  /** CreateMarket Function */
+  if (input.function === 'createMarket') {
+
+    // Market Info
+    const tweet = input.tweet;
+    const tweetUsername = input.tweetUsername;
+    const tweetPhoto = input.tweetPhoto;
+    const tweetCreated = input.tweetCreated;
+    const tweetLink = input.tweetLink;
+
+    if(typeof tweet !== 'string') {
+      throw new ContractError('Tweet format not recognized.');
+    }
+
+    if(typeof tweetUsername !== 'string') {
+      throw new ContractError('tweetUsername format not recognized.');
+    }
+
+    if(typeof tweetPhoto !== 'string') {
+      throw new ContractError('tweetPhoto format not recognized.');
+    }
+
+    if(typeof tweetCreated !== 'string') {
+      throw new ContractError('tweetCreated format not recognized.');
+    }
+
+    if(typeof tweetLink !== 'string') {
+      throw new ContractError('tweetLink format not recognized.');
+    }
+
+    if(!(caller in balances)) {
+      throw new ContractError('Caller needs to have a balance.');
+    }
+
+    let market: VoteInterface = {
+      start: +SmartWeave.block.height,
+      status: 'active',
+      tweet,
+      tweetUsername,
+      tweetPhoto,
+      tweetCreated,
+      tweetLink,
+      yays: 0,
+      nays: 0,
+      staked: [],
+    };
+
+    markets.push(market);
 
     return { state };
   }
@@ -486,6 +502,11 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     const id = input.id;
     const cast = input.cast;
     const stakedAmount = input.stakedAmount;
+    const newStake: StakedInterface = {
+      address: caller,
+      amount: stakedAmount,
+      cast,
+    }
 
     if (!Number.isInteger(id)) {
       throw new ContractError('Invalid value for "id". Must be an integer.');
@@ -495,38 +516,47 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('Invalid value for "stakedAmount". Must be an integer.');
     }
 
-    const vote = votes[id];
+    const market = markets[id];
+    let stakerAddresses = []
+    market.staked.forEach((staker, index) => {
+      stakerAddresses.push(staker[index].address);
+    })
 
     let stakerBalance = 0;
     if (caller in balances) {
-        stakerBalance = balances[caller]
+        stakerBalance = balances[caller];
     }
 
     if (stakerBalance <= 0) {
+      logs.push('Caller does not have high enough balance for this stake.');
       throw new ContractError('Caller does not have high enough balance for this stake.');
     }
 
     if (stakerBalance < stakedAmount) {
+      logs.push('Caller does not have high enough balance for this stake.');
       throw new ContractError('Caller does not have high enough balance for this stake.');
     }
 
-    if (caller in vote.staked) {
-      throw new ContractError('Caller has already staked.');
+    if (stakerAddresses.includes(caller)) {
+      logs.push('Caller has already staked.');
+      throw new ContractError('Caller has already staked nay.');
     }
 
-    if (+SmartWeave.block.height >= (vote.start + settings.get('voteLength'))) {
+    if (+SmartWeave.block.height >= (market.start + settings.get('voteLength'))) {
+      logs.push('Vote has already concluded.');
       throw new ContractError('Vote has already concluded.');
     }
 
     if (cast === 'yay') {
-      vote.yays += stakerBalance;
+      market.yays += stakedAmount;
     } else if (cast === 'nay') {
-      vote.nays += stakerBalance;
+      market.nays += stakedAmount;
     } else {
-      throw new ContractError('Vote cast type unrecognised.');
+      logs.push('Staking cast type unrecognised.');
+      throw new ContractError('Staking cast type unrecognised.');
     }
 
-    vote.staked[caller] = stakedAmount;
+    market.staked.push(newStake);
     balances[caller] -= stakedAmount;
     return { state };
   }
@@ -624,6 +654,16 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     }
 
     return { state };
+  }
+
+  /** Disburse function */
+  if (input.function === 'disburse') {
+    const id = input.id;
+    const market: VoteInterface = markets[id];
+
+    if(!market) {
+      throw new ContractError('This market doesn\'t exists.');
+    }
   }
 
   /** Roles function */

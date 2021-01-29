@@ -1,6 +1,6 @@
 {
-  "name": "ConsensusTest3",
-  "ticker": "CT3",
+  "name": "ConsensusTest4",
+  "ticker": "CT4",
   "balances": {
     "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk": 10000000
   },
@@ -12,6 +12,7 @@
     }]
   },
   "votes": [],
+  "markets": [],
   "roles": {},
   "settings": [
     ["quorum", 0.5],
@@ -19,5 +20,6 @@
     ["voteLength", 2160],
     ["lockMinLength", 5],
     ["lockMaxLength",2160]
-  ]
+  ],
+  "logs": []
 }

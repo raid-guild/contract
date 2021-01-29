@@ -1,5 +1,4 @@
-Latest contract deployment: `95FET2dickp8y1a6E2uRqrCQXs3N8jgeN2Y9aAUyOWI`
-Test contract deployment: `1kKyFOGOW8db1ahA8FVLOE29praXGXwXgRqcXQR_aUg`
+Latest contract deployment: `bBKWTDtnqYsk2jgWBQNhOnZzGWpXIvgg6l4yU4aqlXY`
 
 # Community Contract Specs
 
@@ -27,6 +26,7 @@ The community state has the following default structure:
     }]
   },
   votes: VoteInterface[], 
+  "markets": VoteInterface[],
   roles: {
       [key: string]: string
   },
@@ -36,7 +36,8 @@ The community state has the following default structure:
       ["voteLength", number], // How many blocks to leave a proposal open
       ["lockMinLength", number], // Minimum lockLength allowed
       ["lockMaxLength", number] // Maximum lockLength allowed
-  ]
+  ],
+  logs: [] // Simple logging array to assist development
 }
 ```
 
@@ -50,12 +51,32 @@ Here's an example of what the state when creating the contract should look like:
   },
   "vault": {},
   "votes": [],
+  "markets": [
+    {
+      "start": 616834,
+      "status": "active",
+      "tweet": "This is my tweet",
+      "tweetUsername": "@ecwireless",
+      "tweetPhoto": "photo/link.png",
+      "tweetCreated": "Timestamp",
+      "tweetLink": "www.twitter.com/tweet/link",
+      "yays": 5000,
+      "nays": 0,
+      "staked": [
+        {
+          "address": "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk",
+          "amount": 5000,
+          "cast": "yay"
+        }
+      ]
+    }
+  ],
   "roles": {},
   "settings": [
       ["quorum", 0.5],
-      ["voteLength", 2000],
+      ["voteLength", 2160],
       ["lockMinLength", 100],
-      ["lockMaxLength", 10000]
+      ["lockMaxLength", 2160]
   ]
 }
 ```
@@ -78,9 +99,10 @@ interface VoteInterface {
   voted?: string[];
   start?: number;
   lockLength?: number;
+  staked?: StakedInterface[];
   tweet?: string;
-  tweetByUsername?: string;
-  tweetByPhoto?: string;
+  tweetUsername?: string;
+  tweetPhoto?: string;
   tweetCreated?: string;
   tweetLink?: string;
 }
@@ -225,11 +247,34 @@ Allowed keys for **set** are:
 #### Returns:
 `{ state }`
 
+### CreateMarket
+Holders are able to create a new assertion market.
+#### Requires:
+- **tweet**: The tweet text.
+- **tweetUsername**: Username of the user tweeting.
+- **tweetPhoto**: Photo of the user tweeting.
+- **tweetCreated**: Timestamp of when the tweet was created.
+- **tweetLink**: Link to the tweet.
+
+#### Returns:
+`{ state }`
+
 ### Vote
 Cast a vote on one of the proposals.
 
 #### Requires:
 - **id**: Proposal ID.
+- **cast**: What vote are you casting `'yay' || 'nay'`.
+
+#### Returns:
+`{ state }`
+
+### Stake
+Cast and stake on one of the markets.
+
+#### Requires:
+- **id**: Market ID.
+- **amount**: Amount of the token you are staking.
 - **cast**: What vote are you casting `'yay' || 'nay'`.
 
 #### Returns:
