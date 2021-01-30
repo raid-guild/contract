@@ -1,4 +1,4 @@
-Latest contract deployment: `nQNRi1Ap7uOghPLj_Gz_u8RW4MhXEZE_Ni36jQAWFi8`
+Latest contract deployment: `iEPkBNzZTNXSsEJUKL-RH5N1IkEf83EGWG2-L3kSa3s`
 
 # Community Contract Specs
 
