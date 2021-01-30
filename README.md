@@ -1,4 +1,4 @@
-Latest contract deployment: `bBKWTDtnqYsk2jgWBQNhOnZzGWpXIvgg6l4yU4aqlXY`
+Latest contract deployment: `nQNRi1Ap7uOghPLj_Gz_u8RW4MhXEZE_Ni36jQAWFi8`
 
 # Community Contract Specs
 
@@ -26,7 +26,7 @@ The community state has the following default structure:
     }]
   },
   votes: VoteInterface[], 
-  markets: VoteInterface[],
+  markets: MarketInterface,
   roles: {
       [key: string]: string
   },
@@ -51,8 +51,9 @@ Here's an example of what the state when creating the contract should look like:
   },
   "vault": {},
   "votes": [],
-  "markets": [
-    {
+  "markets": {
+    "2uvJ0-PWEMNYRLYIH32VDDDyiSD6BIZ5aJBWYXYfWks": {
+      "marketId": "2uvJ0-PWEMNYRLYIH32VDDDyiSD6BIZ5aJBWYXYfWks",
       "start": 616834,
       "status": "active",
       "tweet": "This is my tweet",
@@ -70,7 +71,7 @@ Here's an example of what the state when creating the contract should look like:
         }
       ]
     }
-  ],
+  },
   "roles": {},
   "settings": [
       ["quorum", 0.5],
@@ -99,6 +100,23 @@ interface VoteInterface {
   voted?: string[];
   start?: number;
   lockLength?: number;
+  staked?: StakedInterface[];
+  tweet?: string;
+  tweetUsername?: string;
+  tweetPhoto?: string;
+  tweetCreated?: string;
+  tweetLink?: string;
+}
+```
+
+**MarketInterface** is:
+```typescript
+interface MarketInterface {
+  marketId?: string;
+  start?: number;
+  status?: 'active' | 'quorumFailed' | 'passed' | 'failed';
+  yays?: number;
+  nays?: number;
   staked?: StakedInterface[];
   tweet?: string;
   tweetUsername?: string;

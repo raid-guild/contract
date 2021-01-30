@@ -1,8 +1,9 @@
 {
-  "name": "ConsensusTest4",
-  "ticker": "CT4",
+  "name": "ConsensusTest5",
+  "ticker": "CT5",
   "balances": {
-    "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk": 10000000
+    "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk": 5000000,
+    "aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA": 5000000
   },
   "vault": {
     "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk": [{
@@ -12,7 +13,7 @@
     }]
   },
   "votes": [],
-  "markets": [],
+  "markets": {},
   "roles": {},
   "settings": [
     ["quorum", 0.5],

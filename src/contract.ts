@@ -7,7 +7,9 @@ import {
   VaultInterface,
   VaultParamsInterface,
   ExtensionInterface,
-  StakedInterface
+  StakedInterface,
+  MarketParamsInterface,
+  MarketInterface
 } from "./faces";
 
 declare const ContractError: any;
@@ -18,7 +20,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
   const balances: BalancesInterface = state.balances;
   const vault: VaultInterface = state.vault;
   const votes: VoteInterface[] = state.votes;
-  const markets: VoteInterface[] = state.markets;
+  const markets: MarketInterface = state.markets;
   const extensions: ExtensionInterface[] = state.extensions;
   const input: InputInterface = action.input;
   const caller: string = action.caller;
@@ -434,7 +436,8 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('Caller needs to have a balance.');
     }
 
-    let market: VoteInterface = {
+    let market: MarketParamsInterface = {
+      marketId: SmartWeave.transaction.id,
       start: +SmartWeave.block.height,
       status: 'active',
       tweet,
@@ -447,7 +450,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       staked: [],
     };
 
-    markets.push(market);
+    markets[SmartWeave.transaction.id] = market
 
     return { state };
   }
@@ -508,18 +511,18 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       cast,
     }
 
-    if (!Number.isInteger(id)) {
-      throw new ContractError('Invalid value for "id". Must be an integer.');
+    if (typeof id !== 'string') {
+      throw new ContractError('Invalid value for "id". Must be a string.');
     }
 
     if (!Number.isInteger(stakedAmount)) {
       throw new ContractError('Invalid value for "stakedAmount". Must be an integer.');
     }
 
-    const market = markets[id];
+    const market: MarketParamsInterface = markets[id];
     let stakerAddresses = []
-    market.staked.forEach((staker, index) => {
-      stakerAddresses.push(staker[index].address);
+    market.staked.forEach(staker => {
+      stakerAddresses.push(staker.address);
     })
 
     let stakerBalance = 0;
@@ -659,10 +662,18 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
   /** Disburse function */
   if (input.function === 'disburse') {
     const id = input.id;
-    const market: VoteInterface = markets[id];
+    const market: MarketParamsInterface = markets[id];
 
     if(!market) {
       throw new ContractError('This market doesn\'t exists.');
+    }
+
+    if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
+      throw new ContractError('Market has not yet concluded.');
+    }
+
+    if (market.status !== 'active') {
+      throw new ContractError('Market is not active.');
     }
   }
 

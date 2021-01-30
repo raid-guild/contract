@@ -3,3 +3,4 @@ dist
 wallet
 __tests__/*.json
 /coverage
+/src/test.js

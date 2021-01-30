@@ -4,7 +4,7 @@ export interface StateInterface {
   balances: BalancesInterface;
   vault: VaultInterface;
   votes: VoteInterface[];
-  markets: VoteInterface[];
+  markets: MarketInterface;
   roles: RoleInterface;
   settings: [string, any][];
   extensions: ExtensionInterface[];
@@ -50,7 +50,7 @@ export interface ExtendInterface {
   extension?: ExtensionInterface;
 }
 
-export interface InputInterface extends VoteInterface, ExtendInterface {
+export interface InputInterface extends VoteInterface, ExtendInterface, MarketParamsInterface {
   function: GetFunctionType | SetFunctionType;
   cast?: string;
   stakedAmount?: number;
@@ -78,8 +78,20 @@ export interface VoteInterface {
   voted?: string[];
   start?: number;
   lockLength?: number;
+}
 
-  // Market Details
+export interface MarketInterface {
+  [key: string]: MarketParamsInterface;
+}
+
+export interface MarketParamsInterface {
+  marketId?: string;
+  start?: number;
+  status?: VoteStatus;
+  yays?: number;
+  nays?: number;
+
+  // Tweet Details
   staked?: StakedInterface[];
   tweet?: string;
   tweetUsername?: string;
