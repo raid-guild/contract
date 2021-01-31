@@ -1,4 +1,4 @@
-Latest contract deployment: `iEPkBNzZTNXSsEJUKL-RH5N1IkEf83EGWG2-L3kSa3s`
+Latest contract deployment: `HJfFTVxB0kSkr2Q5soVYtoMN4nZd-WZHs1Kv0g2lHuY`
 
 # Community Contract Specs
 
@@ -100,12 +100,6 @@ interface VoteInterface {
   voted?: string[];
   start?: number;
   lockLength?: number;
-  staked?: StakedInterface[];
-  tweet?: string;
-  tweetUsername?: string;
-  tweetPhoto?: string;
-  tweetCreated?: string;
-  tweetLink?: string;
 }
 ```
 
@@ -295,6 +289,15 @@ After a vote is concluded, we should call finalize to make it in effect. It will
 
 #### Requires:
 - **id**: Proposal ID.
+
+#### Returns:
+`{ state }`
+
+### Disburse
+After a market is concluded, we should call disburse to make it in effect, and payout the winners. It will update the market status to `passed`, and execute if needed, or `failed`. It will also return stake amounts to the winners, as well as divide the losers' stake amounts amongst the winners.
+
+#### Requires:
+- **id**: Market ID.
 
 #### Returns:
 `{ state }`

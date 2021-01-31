@@ -662,19 +662,86 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
   /** Disburse function */
   if (input.function === 'disburse') {
     const id = input.id;
+    let totalStakers = [];
+    let dividedPayout = 0;
+
     const market: MarketParamsInterface = markets[id];
 
     if(!market) {
       throw new ContractError('This market doesn\'t exists.');
     }
 
-    if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
-      throw new ContractError('Market has not yet concluded.');
-    }
+    // if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
+    //   throw new ContractError('Market has not yet concluded.');
+    // }
 
     if (market.status !== 'active') {
       throw new ContractError('Market is not active.');
     }
+
+    // YAYS WIN
+    if (market.yays > market.nays) {
+      // Return original stakes to winners
+      market.staked.forEach(staker => {
+        if (staker.cast === 'yay') {
+          totalStakers.push(staker);
+          const stakerAddress = staker.address;
+          balances[stakerAddress] += staker.amount;
+        }
+      })
+
+      // Figure out winning payout
+      dividedPayout = market.nays / totalStakers.length;
+
+      // Give winners the payout
+      market.staked.forEach(staker => {
+        if (staker.cast === 'yay') {
+          const stakerAddress = staker.address;
+          balances[stakerAddress] += dividedPayout;
+        }
+      })
+
+    // NAYS WIN
+    } else if (market.yays < market.nays) {
+      // Return original stakes to winners
+      market.staked.forEach(staker => {
+        if (staker.cast === 'nay') {
+          totalStakers.push(staker);
+          const stakerAddress = staker.address;
+          balances[stakerAddress] += staker.amount;
+        }
+      })
+
+      // Figure out winning payout
+      dividedPayout = market.yays / totalStakers.length;
+
+      // Give winners the payout
+      market.staked.forEach(staker => {
+        if (staker.cast === 'nay') {
+          const stakerAddress = staker.address;
+          balances[stakerAddress] += dividedPayout;
+        }
+      })
+      
+    // TIE
+    } else {
+      // Return original stakes to winners
+      market.staked.forEach(staker => {
+        if (staker.cast === 'nay') {
+          totalStakers.push(staker);
+          const stakerAddress = staker.address;
+          balances[stakerAddress] += staker.amount;
+        } else if (staker.cast === 'yay') {
+          totalStakers.push(staker);
+          const stakerAddress = staker.address;
+          balances[stakerAddress] += staker.amount;
+        }
+      })
+    }
+
+    market.status = 'passed';
+
+    return { state };
   }
 
   /** Roles function */
