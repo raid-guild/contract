@@ -671,9 +671,9 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('This market doesn\'t exists.');
     }
 
-    // if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
-    //   throw new ContractError('Market has not yet concluded.');
-    // }
+    if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
+      throw new ContractError('Market has not yet concluded.');
+    }
 
     if (market.status !== 'active') {
       throw new ContractError('Market is not active.');
