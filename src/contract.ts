@@ -671,9 +671,9 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('This market doesn\'t exists.');
     }
 
-    if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
-      throw new ContractError('Market has not yet concluded.');
-    }
+    // if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
+    //   throw new ContractError('Market has not yet concluded.');
+    // }
 
     if (market.status !== 'active') {
       throw new ContractError('Market is not active.');
@@ -691,13 +691,17 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       })
 
       // Figure out winning payout
-      dividedPayout = market.nays / totalStakers.length;
+      dividedPayout = (market.nays * .3) / totalStakers.length
 
       // Give winners the payout
       market.staked.forEach(staker => {
         if (staker.cast === 'yay') {
           const stakerAddress = staker.address;
           balances[stakerAddress] += dividedPayout;
+        // Return 70% back to losers
+        } else if (staker.cast === 'nay') {
+          const stakerAddress = staker.address
+          balances[stakerAddress] += staker.amount * .7
         }
       })
 
@@ -713,13 +717,17 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       })
 
       // Figure out winning payout
-      dividedPayout = market.yays / totalStakers.length;
+      dividedPayout = (market.yays * .3) / totalStakers.length
 
       // Give winners the payout
       market.staked.forEach(staker => {
         if (staker.cast === 'nay') {
           const stakerAddress = staker.address;
           balances[stakerAddress] += dividedPayout;
+        // Return 70% back to losers
+        } else if (staker.cast === 'yay') {
+          const stakerAddress = staker.address
+          balances[stakerAddress] += staker.amount * .7
         }
       })
       

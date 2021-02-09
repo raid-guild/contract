@@ -1,4 +1,4 @@
-Latest contract deployment: `HJfFTVxB0kSkr2Q5soVYtoMN4nZd-WZHs1Kv0g2lHuY`
+Latest contract deployment: `Uwjox2fPFVvGgaScOZg1z5XfsLlSi7u4UEZKaRZcA0E`
 Deployment with market block height check: `8zGVX17V6u3Uzn2fWJFya3vEuPOvIZ6FRifUDhaprtE`
 
 # Community Contract Specs
