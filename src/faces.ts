@@ -96,7 +96,7 @@ export interface MarketParamsInterface {
   tweet?: string;
   tweetUsername?: string;
   tweetPhoto?: string;
-  tweetCreated?: string;
+  tweetCreated?: number;
   tweetLink?: string;
 }
 

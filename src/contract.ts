@@ -424,7 +424,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('tweetPhoto format not recognized.');
     }
 
-    if(typeof tweetCreated !== 'string') {
+    if(typeof tweetCreated !== 'number') {
       throw new ContractError('tweetCreated format not recognized.');
     }
 
@@ -438,7 +438,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
 
     let market: MarketParamsInterface = {
       marketId: SmartWeave.transaction.id,
-      start: +SmartWeave.block.height,
+      start: Date.now(),
       status: 'active',
       tweet,
       tweetUsername,

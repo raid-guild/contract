@@ -1,4 +1,4 @@
-Latest contract deployment: `Uwjox2fPFVvGgaScOZg1z5XfsLlSi7u4UEZKaRZcA0E`
+Latest contract deployment: `V5n-f9ULvIN8MrId6l34hB5akMBzZfQTnF0GJ9MgXgs`
 Deployment with market block height check: `8zGVX17V6u3Uzn2fWJFya3vEuPOvIZ6FRifUDhaprtE`
 
 # Community Contract Specs
@@ -60,7 +60,7 @@ Here's an example of what the state when creating the contract should look like:
       "tweet": "This is my tweet",
       "tweetUsername": "@ecwireless",
       "tweetPhoto": "photo/link.png",
-      "tweetCreated": "Timestamp",
+      "tweetCreated": 098209,
       "tweetLink": "www.twitter.com/tweet/link",
       "yays": 5000,
       "nays": 0,
@@ -116,7 +116,7 @@ interface MarketInterface {
   tweet?: string;
   tweetUsername?: string;
   tweetPhoto?: string;
-  tweetCreated?: string;
+  tweetCreated?: number;
   tweetLink?: string;
 }
 ```
