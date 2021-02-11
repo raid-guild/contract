@@ -545,7 +545,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('Caller has already staked nay.');
     }
 
-    if (+SmartWeave.block.height >= (market.start + settings.get('voteLength'))) {
+    if (Date.now() >= (market.start + 259200)) {
       logs.push('Vote has already concluded.');
       throw new ContractError('Vote has already concluded.');
     }
@@ -671,9 +671,9 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('This market doesn\'t exists.');
     }
 
-    // if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
-    //   throw new ContractError('Market has not yet concluded.');
-    // }
+    if (Date.now() < (market.start + 259200)) {
+      throw new ContractError('Market has not yet concluded.');
+    }
 
     if (market.status !== 'active') {
       throw new ContractError('Market is not active.');
