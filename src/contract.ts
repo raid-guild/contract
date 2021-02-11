@@ -671,13 +671,28 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('This market doesn\'t exists.');
     }
 
-    if (Date.now() < (market.start + 259200)) {
-      throw new ContractError('Market has not yet concluded.');
-    }
+    // if (Date.now() < (market.start + 259200)) {
+    //   throw new ContractError('Market has not yet concluded.');
+    // }
 
     if (market.status !== 'active') {
       throw new ContractError('Market is not active.');
     }
+
+    // TIP TOKEN HOLDERS
+    // Give 1% fee to each token holder
+    let yayTips = market.yays * .01;
+    let nayTips = market.nays * .01;
+    let totalTips = yayTips + nayTips;
+    let tipsDivided = totalTips / Object.keys(balances).length;
+    Object.keys(balances).forEach(holder => {
+      balances[holder] += tipsDivided;
+    });
+
+    // Apply 1% fee to each stake
+    market.staked.forEach(staker => {
+      staker.amount -= staker.amount * .01;
+    })
 
     // YAYS WIN
     if (market.yays > market.nays) {
@@ -691,7 +706,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       })
 
       // Figure out winning payout
-      dividedPayout = (market.nays * .3) / totalStakers.length
+      dividedPayout = ((market.nays * .99) * .3) / totalStakers.length
 
       // Give winners the payout
       market.staked.forEach(staker => {
@@ -717,7 +732,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       })
 
       // Figure out winning payout
-      dividedPayout = (market.yays * .3) / totalStakers.length
+      dividedPayout = ((market.yays * .99) * .3) / totalStakers.length
 
       // Give winners the payout
       market.staked.forEach(staker => {

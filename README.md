@@ -1,5 +1,5 @@
-Latest contract deployment: `aMlIwSFvhUT5iEZSdzgEldOEd0oa8-7ZcbSSI5eA_3o`
-Deployment with market block height check: `iEyCOIzQC8hwh4_NkJyNcokp9jHy-qIaAOtIE10jdgY`
+Latest contract deployment: `DapcoALOp-IVvWktxJtGGm1uHfTehAnu5g6afpwMkrM`
+Deployment with market block height check: `WJjlFNfhhyfsHBwPj00Q0NBQTt_tQLpFLOrUbInjqnE`
 
 # Community Contract Specs
 
