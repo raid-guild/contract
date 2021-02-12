@@ -505,11 +505,6 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     const id = input.id;
     const cast = input.cast;
     const stakedAmount = input.stakedAmount;
-    const newStake: StakedInterface = {
-      address: caller,
-      amount: stakedAmount,
-      cast,
-    }
 
     if (typeof id !== 'string') {
       throw new ContractError('Invalid value for "id". Must be a string.');
@@ -550,13 +545,32 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('Vote has already concluded.');
     }
 
+    // Tip token holders 1%
+    let tip = stakedAmount / 100;
+    tip = Math.floor(tip / Object.keys(balances).length);
+    let totalTip = tip * Object.keys(balances).length;
+
+    // Get final staked amount
+    let finalStakedAmount = stakedAmount - totalTip;
+
+    // Give tip to all balance holders
+    Object.keys(balances).forEach(holder => {
+      balances[holder] += tip;
+    });
+
     if (cast === 'yay') {
-      market.yays += stakedAmount;
+      market.yays += finalStakedAmount;
     } else if (cast === 'nay') {
-      market.nays += stakedAmount;
+      market.nays += finalStakedAmount;
     } else {
       logs.push('Staking cast type unrecognised.');
       throw new ContractError('Staking cast type unrecognised.');
+    }
+
+    const newStake: StakedInterface = {
+      address: caller,
+      amount: stakedAmount,
+      cast,
     }
 
     market.staked.push(newStake);
@@ -664,6 +678,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     const id = input.id;
     let totalStakers = [];
     let dividedPayout = 0;
+    let totalDividedPayout = 0;
 
     const market: MarketParamsInterface = markets[id];
 
@@ -671,28 +686,13 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('This market doesn\'t exists.');
     }
 
-    // if (Date.now() < (market.start + 259200)) {
-    //   throw new ContractError('Market has not yet concluded.');
-    // }
+    if (Date.now() < (market.start + 259200)) {
+      throw new ContractError('Market has not yet concluded.');
+    }
 
     if (market.status !== 'active') {
       throw new ContractError('Market is not active.');
     }
-
-    // TIP TOKEN HOLDERS
-    // Give 1% fee to each token holder
-    let yayTips = market.yays * .01;
-    let nayTips = market.nays * .01;
-    let totalTips = yayTips + nayTips;
-    let tipsDivided = totalTips / Object.keys(balances).length;
-    Object.keys(balances).forEach(holder => {
-      balances[holder] += tipsDivided;
-    });
-
-    // Apply 1% fee to each stake
-    market.staked.forEach(staker => {
-      staker.amount -= staker.amount * .01;
-    })
 
     // YAYS WIN
     if (market.yays > market.nays) {
@@ -706,7 +706,8 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       })
 
       // Figure out winning payout
-      dividedPayout = ((market.nays * .99) * .3) / totalStakers.length
+      dividedPayout = Math.floor((market.nays * .3) / totalStakers.length);
+      totalDividedPayout = dividedPayout * totalStakers.length;
 
       // Give winners the payout
       market.staked.forEach(staker => {
@@ -716,7 +717,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
         // Return 70% back to losers
         } else if (staker.cast === 'nay') {
           const stakerAddress = staker.address
-          balances[stakerAddress] += staker.amount * .7
+          balances[stakerAddress] += staker.amount - totalDividedPayout;
         }
       })
 
@@ -732,7 +733,8 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       })
 
       // Figure out winning payout
-      dividedPayout = ((market.yays * .99) * .3) / totalStakers.length
+      dividedPayout = Math.floor((market.yays * .3) / totalStakers.length);
+      totalDividedPayout = dividedPayout * totalStakers.length;
 
       // Give winners the payout
       market.staked.forEach(staker => {
@@ -742,7 +744,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
         // Return 70% back to losers
         } else if (staker.cast === 'yay') {
           const stakerAddress = staker.address
-          balances[stakerAddress] += staker.amount * .7
+          balances[stakerAddress] += staker.amount - totalDividedPayout;
         }
       })
       
