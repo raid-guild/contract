@@ -65,13 +65,13 @@ Here's an example of what the state when creating the contract should look like:
       "tweetLink": "www.twitter.com/tweet/link",
       "yays": 5000,
       "nays": 0,
-      "staked": [
-        {
+      "staked": {
+        "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk": {
           "address": "XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk",
           "amount": 5000,
           "cast": "yay"
         }
-      ]
+      }
     }
   },
   "roles": {},
@@ -109,7 +109,6 @@ interface VoteInterface {
 ```typescript
 interface MarketInterface {
   marketId?: string;
-  start?: number;
   status?: 'active' | 'quorumFailed' | 'passed' | 'failed';
   yays?: number;
   nays?: number;
