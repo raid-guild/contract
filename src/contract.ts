@@ -1,4 +1,3 @@
-
 import {
   StateInterface,
   ActionInterface,
@@ -8,7 +7,6 @@ import {
   VaultInterface,
   VaultParamsInterface,
   ExtensionInterface,
-  StakedInterface,
   StakedParamsInterface,
   MarketParamsInterface,
   MarketInterface
@@ -669,8 +667,8 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
   if (input.function === 'disburse') {
     const id = input.id;
     let totalWinningStakers = [];
-    let dividedPayout = 0;
-    let totalDividedPayout = 0;
+    let dividedPayout: bigint = BigInt(0);
+    let totalDividedPayout: bigint = BigInt(0);
 
     const market: MarketParamsInterface = markets[id];
 
@@ -694,39 +692,40 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
           totalWinningStakers.push(address);
 
           // Give Tip
-          let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
-          let totalTip = tipDivided * Object.keys(balances).length;
+          // let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
+          // let totalTip = tipDivided * Object.keys(balances).length;
+
+          let tipDivided = (BigInt(market.staked[address].amount) / BigInt(100)) / (BigInt(Object.keys(balances).length));
+          let totalTip = tipDivided * BigInt(Object.keys(balances).length);
           Object.keys(balances).forEach(balanceAddress => {
-            balances[balanceAddress] += tipDivided;
+            balances[balanceAddress] += Number(tipDivided);
           })
 
-          balances[address] += (market.staked[address].amount - totalTip);
+          balances[address] += (market.staked[address].amount - Number(totalTip));
         }
       });
       
       Object.keys(market.staked).forEach(address => {
         if (market.staked[address].cast === 'nay') {
           // Give Tip
-          let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
-          let totalTip = tipDivided * Object.keys(balances).length;
+          let tipDivided = (BigInt(market.staked[address].amount) / BigInt(100)) / (BigInt(Object.keys(balances).length));
+          let totalTip = tipDivided * BigInt(Object.keys(balances).length);
           Object.keys(balances).forEach(balanceAddress => {
-            balances[balanceAddress] += tipDivided;
+            balances[balanceAddress] += Number(tipDivided);
           })
-          console.log(tipDivided)
-          console.log(totalTip)
 
-          let amountMinusTip = market.staked[address].amount - totalTip;
+          let amountMinusTip: bigint = BigInt(market.staked[address].amount) - totalTip;
 
           // Figure out winning payout
-          dividedPayout = Math.floor((amountMinusTip * .3) / totalWinningStakers.length);
-          totalDividedPayout = dividedPayout * totalWinningStakers.length;
+          dividedPayout = (BigInt(amountMinusTip) * BigInt(3) / BigInt(100)) / BigInt(totalWinningStakers.length);
+          totalDividedPayout = BigInt(dividedPayout) * BigInt(totalWinningStakers.length);
           // Return 70% back to losers
-          balances[address] += amountMinusTip - totalDividedPayout;
+          balances[address] += Number(amountMinusTip) - Number(totalDividedPayout);
 
           // Give winners the payout
           Object.keys(market.staked).forEach(payoutAddress => {
             if (market.staked[payoutAddress].cast === 'yay') {
-              balances[payoutAddress] += dividedPayout;
+              balances[payoutAddress] += Number(dividedPayout);
             } 
           });
         }
@@ -740,37 +739,37 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
           totalWinningStakers.push(address);
 
           // Give Tip
-          let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
-          let totalTip = tipDivided * Object.keys(balances).length;
+          let tipDivided = (BigInt(market.staked[address].amount) / BigInt(100)) / (BigInt(Object.keys(balances).length));
+          let totalTip = tipDivided * BigInt(Object.keys(balances).length);
           Object.keys(balances).forEach(balanceAddress => {
-            balances[balanceAddress] += tipDivided;
+            balances[balanceAddress] += Number(tipDivided);
           })
 
-          balances[address] += (market.staked[address].amount - totalTip);
+          balances[address] += (market.staked[address].amount - Number(totalTip));
         }
       })
 
       Object.keys(market.staked).forEach(address => {
         if (market.staked[address].cast === 'yay') {
           // Give Tip
-          let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
-          let totalTip = tipDivided * Object.keys(balances).length;
+          let tipDivided = (BigInt(market.staked[address].amount) / BigInt(100)) / (BigInt(Object.keys(balances).length));
+          let totalTip = tipDivided * BigInt(Object.keys(balances).length);
           Object.keys(balances).forEach(balanceAddress => {
-            balances[balanceAddress] += tipDivided;
+            balances[balanceAddress] += Number(tipDivided);
           })
 
-          let amountMinusTip = market.staked[address].amount - totalTip;
+          let amountMinusTip = market.staked[address].amount - Number(totalTip);
           
           // Figure out winning payout
-          dividedPayout = Math.floor((amountMinusTip * .3) / totalWinningStakers.length);
-          totalDividedPayout = dividedPayout * totalWinningStakers.length;
+          dividedPayout = (BigInt(amountMinusTip) * BigInt(3) / BigInt(100)) / BigInt(totalWinningStakers.length);
+          totalDividedPayout = BigInt(dividedPayout) * BigInt(totalWinningStakers.length);
           // Return 70% back to losers
-          balances[address] += amountMinusTip - totalDividedPayout;
+          balances[address] += Number(amountMinusTip) - Number(totalDividedPayout);
 
           // Give winners the payout
           Object.keys(market.staked).forEach(payoutAddress => {
             if (market.staked[payoutAddress].cast === 'nay') {
-              balances[payoutAddress] += dividedPayout;
+              balances[payoutAddress] += Number(dividedPayout);
             } 
           });
         }
@@ -781,12 +780,12 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       // Return original stakes to winners
       Object.keys(market.staked).forEach(address => {
         // Give Tip
-        let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
-        let totalTip = tipDivided * Object.keys(balances).length;
-        balances[address] += (market.staked[address].amount - totalTip);
+        let tipDivided = (BigInt(market.staked[address].amount) / BigInt(100)) / (BigInt(Object.keys(balances).length));
+        let totalTip = tipDivided * BigInt(Object.keys(balances).length);
+        balances[address] += (market.staked[address].amount - Number(totalTip));
 
         Object.keys(balances).forEach(balanceAddress => {
-          balances[balanceAddress] += tipDivided;
+          balances[balanceAddress] += Number(tipDivided);
         })
       })
     }
