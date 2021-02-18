@@ -8,7 +8,6 @@ export interface StateInterface {
   roles: RoleInterface;
   settings: [string, any][];
   extensions: ExtensionInterface[];
-  logs: string[];
 }
 
 export interface RoleInterface {
@@ -57,6 +56,10 @@ export interface InputInterface extends VoteInterface, ExtendInterface, MarketPa
 }
 
 export interface StakedInterface {
+  [key: string]: StakedParamsInterface;
+}
+
+export interface StakedParamsInterface {
   address: string;
   amount: number;
   cast: string;
@@ -86,13 +89,12 @@ export interface MarketInterface {
 
 export interface MarketParamsInterface {
   marketId?: string;
-  start?: number;
   status?: VoteStatus;
   yays?: number;
   nays?: number;
 
   // Tweet Details
-  staked?: StakedInterface[];
+  staked?: StakedInterface;
   tweet?: string;
   tweetUsername?: string;
   tweetPhoto?: string;

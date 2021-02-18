@@ -1,3 +1,4 @@
+
 import {
   StateInterface,
   ActionInterface,
@@ -8,6 +9,7 @@ import {
   VaultParamsInterface,
   ExtensionInterface,
   StakedInterface,
+  StakedParamsInterface,
   MarketParamsInterface,
   MarketInterface
 } from "./faces";
@@ -24,7 +26,6 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
   const extensions: ExtensionInterface[] = state.extensions;
   const input: InputInterface = action.input;
   const caller: string = action.caller;
-  const logs: string[] = state.logs;
 
   /** Transfer Function */
   if (input.function === 'transfer') {
@@ -438,7 +439,6 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
 
     let market: MarketParamsInterface = {
       marketId: SmartWeave.transaction.id,
-      start: Date.now(),
       status: 'active',
       tweet,
       tweetUsername,
@@ -447,7 +447,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       tweetLink,
       yays: 0,
       nays: 0,
-      staked: [],
+      staked: {},
     };
 
     markets[SmartWeave.transaction.id] = market
@@ -516,8 +516,8 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
 
     const market: MarketParamsInterface = markets[id];
     let stakerAddresses = []
-    market.staked.forEach(staker => {
-      stakerAddresses.push(staker.address);
+    Object.keys(market.staked).forEach(stakerAddress => {
+      stakerAddresses.push(stakerAddress);
     })
 
     let stakerBalance = 0;
@@ -526,58 +526,50 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     }
 
     if (stakerBalance <= 0) {
-      logs.push('Caller does not have high enough balance for this stake.');
       throw new ContractError('Caller does not have high enough balance for this stake.');
     }
 
     if (stakerBalance < stakedAmount) {
-      logs.push('Caller does not have high enough balance for this stake.');
       throw new ContractError('Caller does not have high enough balance for this stake.');
     }
 
-    if (stakerAddresses.includes(caller)) {
-      logs.push('Caller has already staked.');
-      throw new ContractError('Caller has already staked nay.');
+    // if (Date.now() >= (market.tweetCreated + 259200000)) { // 259200000 = 3 days
+    //   throw new ContractError('Vote has already concluded.');
+    // }
+
+    if (caller in market.staked && market.staked[caller].cast !== cast) {
+      throw new ContractError('Caller cannot stake both yes and no.');
     }
 
-    if (Date.now() >= (market.start + 259200)) {
-      logs.push('Vote has already concluded.');
-      throw new ContractError('Vote has already concluded.');
+    const newStake: StakedParamsInterface = {
+      address: caller,
+      amount: stakedAmount,
+      cast: cast
     }
-
-    // Tip token holders 1%
-    let tip = stakedAmount / 100;
-    tip = Math.floor(tip / Object.keys(balances).length);
-    let totalTip = tip * Object.keys(balances).length;
-
-    // Get final staked amount
-    let finalStakedAmount = stakedAmount - totalTip;
-
-    // Give tip to all balance holders
-    Object.keys(balances).forEach(holder => {
-      balances[holder] += tip;
-    });
 
     if (cast === 'yay') {
-      market.yays += finalStakedAmount;
+      market.yays += stakedAmount;
+
+      if (caller in market.staked) {
+        market.staked[caller].amount += stakedAmount;
+      } else {
+        market.staked[caller] = newStake;
+      }
     } else if (cast === 'nay') {
-      market.nays += finalStakedAmount;
+      market.nays += stakedAmount;
+  
+      if (caller in market.staked) {
+        market.staked[caller].amount += stakedAmount;
+      } else {
+        market.staked[caller] = newStake;
+      }
     } else {
-      logs.push('Staking cast type unrecognised.');
       throw new ContractError('Staking cast type unrecognised.');
     }
 
-    const newStake: StakedInterface = {
-      address: caller,
-      amount: stakedAmount,
-      cast,
-    }
-
-    market.staked.push(newStake);
     balances[caller] -= stakedAmount;
     return { state };
   }
-
 
   /** Finalize Function */
   if (input.function === 'finalize') {
@@ -676,7 +668,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
   /** Disburse function */
   if (input.function === 'disburse') {
     const id = input.id;
-    let totalStakers = [];
+    let totalWinningStakers = [];
     let dividedPayout = 0;
     let totalDividedPayout = 0;
 
@@ -686,9 +678,9 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('This market doesn\'t exists.');
     }
 
-    if (Date.now() < (market.start + 259200)) {
-      throw new ContractError('Market has not yet concluded.');
-    }
+    // if (Date.now() < (market.tweetCreated + 259200000)) { // 259200000 = 3 days
+    //   throw new ContractError('Market has not yet concluded.');
+    // }
 
     if (market.status !== 'active') {
       throw new ContractError('Market is not active.');
@@ -697,70 +689,105 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     // YAYS WIN
     if (market.yays > market.nays) {
       // Return original stakes to winners
-      market.staked.forEach(staker => {
-        if (staker.cast === 'yay') {
-          totalStakers.push(staker);
-          const stakerAddress = staker.address;
-          balances[stakerAddress] += staker.amount;
+      Object.keys(market.staked).forEach(address => {
+        if (market.staked[address].cast === 'yay') {
+          totalWinningStakers.push(address);
+
+          // Give Tip
+          let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
+          let totalTip = tipDivided * Object.keys(balances).length;
+          Object.keys(balances).forEach(balanceAddress => {
+            balances[balanceAddress] += tipDivided;
+          })
+
+          balances[address] += (market.staked[address].amount - totalTip);
         }
-      })
+      });
+      
+      Object.keys(market.staked).forEach(address => {
+        if (market.staked[address].cast === 'nay') {
+          // Give Tip
+          let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
+          let totalTip = tipDivided * Object.keys(balances).length;
+          Object.keys(balances).forEach(balanceAddress => {
+            balances[balanceAddress] += tipDivided;
+          })
+          console.log(tipDivided)
+          console.log(totalTip)
 
-      // Figure out winning payout
-      dividedPayout = Math.floor((market.nays * .3) / totalStakers.length);
-      totalDividedPayout = dividedPayout * totalStakers.length;
+          let amountMinusTip = market.staked[address].amount - totalTip;
 
-      // Give winners the payout
-      market.staked.forEach(staker => {
-        if (staker.cast === 'yay') {
-          const stakerAddress = staker.address;
-          balances[stakerAddress] += dividedPayout;
-        // Return 70% back to losers
-        } else if (staker.cast === 'nay') {
-          const stakerAddress = staker.address
-          balances[stakerAddress] += staker.amount - totalDividedPayout;
+          // Figure out winning payout
+          dividedPayout = Math.floor((amountMinusTip * .3) / totalWinningStakers.length);
+          totalDividedPayout = dividedPayout * totalWinningStakers.length;
+          // Return 70% back to losers
+          balances[address] += amountMinusTip - totalDividedPayout;
+
+          // Give winners the payout
+          Object.keys(market.staked).forEach(payoutAddress => {
+            if (market.staked[payoutAddress].cast === 'yay') {
+              balances[payoutAddress] += dividedPayout;
+            } 
+          });
         }
       })
 
     // NAYS WIN
     } else if (market.yays < market.nays) {
       // Return original stakes to winners
-      market.staked.forEach(staker => {
-        if (staker.cast === 'nay') {
-          totalStakers.push(staker);
-          const stakerAddress = staker.address;
-          balances[stakerAddress] += staker.amount;
+      Object.keys(market.staked).forEach(address => {
+        if (market.staked[address].cast === 'nay') {
+          totalWinningStakers.push(address);
+
+          // Give Tip
+          let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
+          let totalTip = tipDivided * Object.keys(balances).length;
+          Object.keys(balances).forEach(balanceAddress => {
+            balances[balanceAddress] += tipDivided;
+          })
+
+          balances[address] += (market.staked[address].amount - totalTip);
         }
       })
 
-      // Figure out winning payout
-      dividedPayout = Math.floor((market.yays * .3) / totalStakers.length);
-      totalDividedPayout = dividedPayout * totalStakers.length;
+      Object.keys(market.staked).forEach(address => {
+        if (market.staked[address].cast === 'yay') {
+          // Give Tip
+          let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
+          let totalTip = tipDivided * Object.keys(balances).length;
+          Object.keys(balances).forEach(balanceAddress => {
+            balances[balanceAddress] += tipDivided;
+          })
 
-      // Give winners the payout
-      market.staked.forEach(staker => {
-        if (staker.cast === 'nay') {
-          const stakerAddress = staker.address;
-          balances[stakerAddress] += dividedPayout;
-        // Return 70% back to losers
-        } else if (staker.cast === 'yay') {
-          const stakerAddress = staker.address
-          balances[stakerAddress] += staker.amount - totalDividedPayout;
+          let amountMinusTip = market.staked[address].amount - totalTip;
+          
+          // Figure out winning payout
+          dividedPayout = Math.floor((amountMinusTip * .3) / totalWinningStakers.length);
+          totalDividedPayout = dividedPayout * totalWinningStakers.length;
+          // Return 70% back to losers
+          balances[address] += amountMinusTip - totalDividedPayout;
+
+          // Give winners the payout
+          Object.keys(market.staked).forEach(payoutAddress => {
+            if (market.staked[payoutAddress].cast === 'nay') {
+              balances[payoutAddress] += dividedPayout;
+            } 
+          });
         }
-      })
+      });
       
     // TIE
     } else {
       // Return original stakes to winners
-      market.staked.forEach(staker => {
-        if (staker.cast === 'nay') {
-          totalStakers.push(staker);
-          const stakerAddress = staker.address;
-          balances[stakerAddress] += staker.amount;
-        } else if (staker.cast === 'yay') {
-          totalStakers.push(staker);
-          const stakerAddress = staker.address;
-          balances[stakerAddress] += staker.amount;
-        }
+      Object.keys(market.staked).forEach(address => {
+        // Give Tip
+        let tipDivided = Math.floor((market.staked[address].amount / 100) / Object.keys(balances).length);
+        let totalTip = tipDivided * Object.keys(balances).length;
+        balances[address] += (market.staked[address].amount - totalTip);
+
+        Object.keys(balances).forEach(balanceAddress => {
+          balances[balanceAddress] += tipDivided;
+        })
       })
     }
 

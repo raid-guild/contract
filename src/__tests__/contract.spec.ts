@@ -13,11 +13,11 @@ const arweave = Arweave.init({
 const { handle } = require('../contract.ts');
 let state: StateInterface = JSON.parse(fs.readFileSync('./src/contract.json', 'utf8'));
 
-let { handler, swGlobal } = createContractExecutionEnvironment(arweave, handle.toString(), 'bYz5YKzHH97983nS8UWtqjrlhBHekyy-kvHt_eBxBBY');
+let { handler, swGlobal } = createContractExecutionEnvironment(arweave, handle.toString(), 'BjRtuJ9i_Vr_Z14WvGPTcbqRcH98mNE8A2LYlYw19Jg');
 
 const addresses = {
-  admin: 'uhE-QeYS8i4pmUtnxQyHD7dzXFNaJ9oMK-IM-QPNY6M',
-  user: 'VAg65x9jNSfO9KQHdd3tfx1vQa8qyCyJ_uj7QcxNLDk',
+  admin: 'XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk',
+  user: 'KWn-0l96Ss_lHheS1cjDY5N-94SHyxAQO8Wfy1ehPu0',
   nonuser: 'DiFv0MDBxKEFkJEy_KNgJXNG6mxxSTcxgV0h4gzAgsc'
 };
 
@@ -31,7 +31,7 @@ describe('Transfer Balances', () => {
       qty: 1000
     }, caller: addresses.admin});
   
-    expect(Object.keys(state.balances).length).toBe(2);
+    expect(Object.keys(state.balances).length).toBe(4);
     expect(state.balances[addresses.admin]).toBe(9999000);
     expect(state.balances[addresses.user]).toBe(1000);
   });
@@ -644,3 +644,282 @@ describe('Transfer locked', () => {
     expect(Object.keys(state.vault[addresses.admin]).length).toBe((totalVault+1));
   });
 });
+
+// ConsensusTrade Tests
+describe('Create new market', () => {
+  const func = 'createMarket';
+
+  it('should create a new market', () => {
+    handler(state, { input: {
+      function: func,
+      tweet: 'Tweet 1',
+      tweetUsername: '@ECWireless',
+      tweetPhoto: 'https://pbs.twimg.com/profile_images/3240741454/9080e76653a80e43ae2058432bc76806_400x400.jpeg',
+      tweetCreated: 1613590964209,
+      tweetLink: 'https://twitter.com/BiIIMurray/status/437367711723978752'
+    }, caller: addresses.admin });
+
+    expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].tweet).toBe('Tweet 1');
+  });
+
+  it('should fail, tweet format not recognized', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        tweet: 1,
+        tweetUsername: '@ECWireless',
+        tweetPhoto: 'https://pbs.twimg.com/profile_images/3240741454/9080e76653a80e43ae2058432bc76806_400x400.jpeg',
+        tweetCreated: 1234567890,
+        tweetLink: 'https://twitter.com/BiIIMurray/status/437367711723978752'
+      }, caller: addresses.admin });
+
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].tweet).toBe(undefined);
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('should fail, tweetUsername format not recognized', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        tweet: 'Tweet 1',
+        tweetUsername: 1,
+        tweetPhoto: 'https://pbs.twimg.com/profile_images/3240741454/9080e76653a80e43ae2058432bc76806_400x400.jpeg',
+        tweetCreated: 1234567890,
+        tweetLink: 'https://twitter.com/BiIIMurray/status/437367711723978752'
+      }, caller: addresses.admin });
+
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].tweet).toBe(undefined);
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('should fail, tweetPhoto format not recognized', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        tweet: 'Tweet 1',
+        tweetUsername: '@ECWireless',
+        tweetPhoto: 123,
+        tweetCreated: 1234567890,
+        tweetLink: 'https://twitter.com/BiIIMurray/status/437367711723978752'
+      }, caller: addresses.admin });
+
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].tweet).toBe(undefined);
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('should fail, tweetCreated format not recognized', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        tweet: 'Tweet 1',
+        tweetUsername: '@ECWireless',
+        tweetPhoto: 'https://pbs.twimg.com/profile_images/3240741454/9080e76653a80e43ae2058432bc76806_400x400.jpeg',
+        tweetCreated: '1234567890',
+        tweetLink: 'https://twitter.com/BiIIMurray/status/437367711723978752'
+      }, caller: addresses.admin });
+
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].tweet).toBe(undefined);
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('should fail, tweetLink format not recognized', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        tweet: 'Tweet 1',
+        tweetUsername: '@ECWireless',
+        tweetPhoto: 'https://pbs.twimg.com/profile_images/3240741454/9080e76653a80e43ae2058432bc76806_400x400.jpeg',
+        tweetCreated: 1234567890,
+        tweetLink: 123
+      }, caller: addresses.admin });
+
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].tweet).toBe(undefined);
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+});
+
+describe('Stake on market', () => {
+  const func = 'stake';
+
+  it('should fail, id is not a string', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        id: 123,
+        cast: 'yay',
+        stakedAmount: 200
+      }, caller: addresses.admin });
+
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].staked[0].address).toBe(undefined);
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('should fail, stakedAmount is not an integer', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+        cast: 'yay',
+        stakedAmount: '200'
+      }, caller: addresses.admin });
+
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].staked[0].address).toBe(undefined);
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('should fail, staker does not have high enough balance', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+        cast: 'yay',
+        stakedAmount: 10000000
+      }, caller: addresses.admin });
+
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].staked[addresses.admin].address).toBe(undefined);
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('should stake tokens on yay', () => {
+    handler(state, { input: {
+      function: func,
+      id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+      cast: 'yay',
+      stakedAmount: 1000
+    }, caller: addresses.admin });
+
+    expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].staked[addresses.admin].address).toBe('XacJBWnPmWEHUixZepCPGc-DJD7jDn1CiZ99UAKpkIk');
+  });
+
+  it('should allow double-staking on yay', () => {
+    handler(state, { input: {
+      function: func,
+      id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+      cast: 'yay',
+      stakedAmount: 1000
+    }, caller: addresses.admin });
+
+    expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].staked[addresses.admin].amount).toBe(2000);
+  });
+
+  it('should allow separate address staking on yay', () => {
+    handler(state, { input: {
+      function: func,
+      id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+      cast: 'yay',
+      stakedAmount: 2000
+    }, caller: 'O6SGGaUbSm72rQO-9A7SGFUIGOiSy8Uih1-zbQmufaU' });
+
+    expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].staked['O6SGGaUbSm72rQO-9A7SGFUIGOiSy8Uih1-zbQmufaU'].amount).toBe(2000);
+  });
+
+  it('should fail, cannot stake both yes and no', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+        cast: 'nay',
+        stakedAmount: 200
+      }, caller: addresses.admin });
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('should stake tokens on nay', () => {
+    handler(state, { input: {
+      function: func,
+      id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+      cast: 'nay',
+      stakedAmount: 2000
+    }, caller: 'aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA' });
+
+    expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].staked['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA'].address).toBe('aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA');
+  });
+
+  it('should allow double-staking on nay', () => {
+    handler(state, { input: {
+      function: func,
+      id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+      cast: 'nay',
+      stakedAmount: 1000
+    }, caller: 'aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA' });
+
+    expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].staked['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA'].amount).toBe(3000);
+  });
+});
+
+describe('Disburse market funds', () => {
+  const func = 'disburse';
+
+  it('Should fail, market doesn\'t exist', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI9',
+      }, caller: addresses.admin });
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  it('Should change status to "passed"', () => {
+    handler(state, { input: {
+      function: func,
+      id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+    }, caller: addresses.admin });
+
+    expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].status).toBe('passed');
+  });
+
+  it('Should fail, market has already passed', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI9',
+      }, caller: addresses.admin });
+      
+      expect(state.markets['kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8'].status).toBe('passed');
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
+  // it('Should return all funds during tie', () => {
+  //   expect(state.balances['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA']).toBe(9999980);
+  // });
+
+  // it('Should give correct funds to yay winners', () => {
+  //   expect(state.balances['O6SGGaUbSm72rQO-9A7SGFUIGOiSy8Uih1-zbQmufaU']).toBe(10000442);
+  // });
+
+  it('Should give correct funds to nay losers', () => {
+    expect(state.balances['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA']).toBe(9999099);
+  });
+
+    // it('Should give correct funds to nay winners', () => {
+    //   expect(state.balances['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA']).toBe(10000900);
+    // });
+
+    // it('Should give correct funds to yay losers', () => {
+    //   expect(state.balances['O6SGGaUbSm72rQO-9A7SGFUIGOiSy8Uih1-zbQmufaU']).toBe(9999700);
+    // });
+});
+
+9997017
