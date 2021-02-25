@@ -1,6 +1,4 @@
-Latest contract deployment: `f1wibc4fPQbcOtHR9ZlcfiJZicJSHA2mgETC-3WHMME`
-
-Deployment with market block height check: `1xFNdOU1egZUCBlbpx7iO-Ew4PYLCx8O3OwtyDCR78E`
+Latest deployment: `D0fXmqqg8yeEmtOZEacxF9IPG7fZSSqxHo-t_9Qaogo`
 
 # Community Contract Specs
 
@@ -109,6 +107,7 @@ interface VoteInterface {
 ```typescript
 interface MarketInterface {
   marketId?: string;
+  start?: number;
   status?: 'active' | 'quorumFailed' | 'passed' | 'failed';
   yays?: number;
   nays?: number;

@@ -8,7 +8,6 @@ import {
   VaultInterface,
   VaultParamsInterface,
   ExtensionInterface,
-  StakedInterface,
   StakedParamsInterface,
   MarketParamsInterface,
   MarketInterface
@@ -440,6 +439,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     let market: MarketParamsInterface = {
       marketId: SmartWeave.transaction.id,
       status: 'active',
+      start: +SmartWeave.block.height,
       tweet,
       tweetUsername,
       tweetPhoto,
@@ -515,6 +515,11 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     }
 
     const market: MarketParamsInterface = markets[id];
+
+    if (+SmartWeave.block.height >= (market.start + settings.get('voteLength'))) {
+      throw new ContractError('Vote has already concluded.');
+    }
+
     let stakerAddresses = []
     Object.keys(market.staked).forEach(stakerAddress => {
       stakerAddresses.push(stakerAddress);
@@ -532,10 +537,6 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     if (stakerBalance < stakedAmount) {
       throw new ContractError('Caller does not have high enough balance for this stake.');
     }
-
-    // if (Date.now() >= (market.tweetCreated + 259200000)) { // 259200000 = 3 days
-    //   throw new ContractError('Vote has already concluded.');
-    // }
 
     if (caller in market.staked && market.staked[caller].cast !== cast) {
       throw new ContractError('Caller cannot stake both yes and no.');
@@ -678,9 +679,9 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
       throw new ContractError('This market doesn\'t exists.');
     }
 
-    // if (Date.now() < (market.tweetCreated + 259200000)) { // 259200000 = 3 days
-    //   throw new ContractError('Market has not yet concluded.');
-    // }
+    if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
+      throw new ContractError('Vote has not yet concluded.');
+    }
 
     if (market.status !== 'active') {
       throw new ContractError('Market is not active.');

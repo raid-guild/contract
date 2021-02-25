@@ -90,6 +90,7 @@ export interface MarketInterface {
 export interface MarketParamsInterface {
   marketId?: string;
   status?: VoteStatus;
+  start?: number;
   yays?: number;
   nays?: number;
 
