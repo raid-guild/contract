@@ -517,7 +517,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     const market: MarketParamsInterface = markets[id];
 
     if (+SmartWeave.block.height >= (market.start + settings.get('voteLength'))) {
-      throw new ContractError('Vote has already concluded.');
+      throw new ContractError('Market has already concluded.');
     }
 
     let stakerAddresses = []
@@ -680,7 +680,7 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
     }
 
     if (+SmartWeave.block.height < (market.start + settings.get('voteLength'))) {
-      throw new ContractError('Vote has not yet concluded.');
+      throw new ContractError('Market has not yet concluded.');
     }
 
     if (market.status !== 'active') {
