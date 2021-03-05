@@ -713,8 +713,6 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
           Object.keys(balances).forEach(balanceAddress => {
             balances[balanceAddress] += tipDivided;
           })
-          console.log(tipDivided)
-          console.log(totalTip)
 
           let amountMinusTip = market.staked[address].amount - totalTip;
 
@@ -725,11 +723,20 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
           balances[address] += amountMinusTip - totalDividedPayout;
 
           // Give winners the payout
+          let remainingPayout = totalDividedPayout;
           Object.keys(market.staked).forEach(payoutAddress => {
             if (market.staked[payoutAddress].cast === 'yay') {
-              balances[payoutAddress] += dividedPayout;
-            } 
+              if (totalDividedPayout > 1) {
+                let split = market.staked[payoutAddress].amount / market.yays;
+                let splitAmount = Math.floor(totalDividedPayout * split);
+                remainingPayout -= splitAmount;
+                balances[payoutAddress] += splitAmount;
+              } else {
+                balances[payoutAddress] += remainingPayout;
+              }
+            }
           });
+          balances[Object.keys(market.staked)[0]] += remainingPayout;
         }
       })
 
@@ -769,11 +776,20 @@ export function handle(state: StateInterface, action: ActionInterface): { state:
           balances[address] += amountMinusTip - totalDividedPayout;
 
           // Give winners the payout
+          let remainingPayout = totalDividedPayout;
           Object.keys(market.staked).forEach(payoutAddress => {
             if (market.staked[payoutAddress].cast === 'nay') {
-              balances[payoutAddress] += dividedPayout;
-            } 
+              if (totalDividedPayout > 1) {
+                let split = market.staked[payoutAddress].amount / market.nays;
+                let splitAmount = Math.floor(totalDividedPayout * split);
+                remainingPayout -= splitAmount;
+                balances[payoutAddress] += splitAmount;
+              } else {
+                balances[payoutAddress] += remainingPayout;
+              }
+            }
           });
+          balances[Object.keys(market.staked)[0]] += remainingPayout;
         }
       });
       

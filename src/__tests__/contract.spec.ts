@@ -32,8 +32,8 @@ describe('Transfer Balances', () => {
     }, caller: addresses.admin});
   
     expect(Object.keys(state.balances).length).toBe(4);
-    expect(state.balances[addresses.admin]).toBe(9999000);
-    expect(state.balances[addresses.user]).toBe(1000);
+    expect(state.balances[addresses.admin]).toBe(2498000);
+    expect(state.balances[addresses.user]).toBe(2501000);
   });
 
   it('should fail, invalid address', () => {
@@ -47,7 +47,7 @@ describe('Transfer Balances', () => {
       expect(err.name).toBe('ContractError');
     }
 
-    expect(state.balances[addresses.user]).toBe(1000);
+    expect(state.balances[addresses.user]).toBe(2501000);
     expect(state.balances[addresses.nonuser]).toBeUndefined();
   });
 
@@ -56,13 +56,13 @@ describe('Transfer Balances', () => {
       handler(state, {input: {
         function: func,
         target: addresses.nonuser,
-        qty: 1100
+        qty: 2502000
       }, caller: addresses.user})
     } catch(err) {
       expect(err.name).toBe('ContractError');
     }
 
-    expect(state.balances[addresses.user]).toBe(1000);
+    expect(state.balances[addresses.user]).toBe(2501000);
     expect(state.balances[addresses.nonuser]).toBeUndefined();
   });
 
@@ -77,18 +77,18 @@ describe('Transfer Balances', () => {
       expect(err.name).toBe('ContractError');
     }
 
-    expect(state.balances[addresses.user]).toBe(1000);
+    expect(state.balances[addresses.user]).toBe(2501000);
   });
 
   it(`should transfer from ${addresses.user} to ${addresses.admin}`, () => {
     handler(state, {input: {
       function: 'transfer',
       target: addresses.admin,
-      qty: 900
+      qty: 1000
     }, caller: addresses.user});
 
-    expect(state.balances[addresses.user]).toBe(100);
-    expect(state.balances[addresses.admin]).toBe(9999900);
+    expect(state.balances[addresses.user]).toBe(2500000);
+    expect(state.balances[addresses.admin]).toBe(2499000);
   });
 });
 
@@ -102,7 +102,7 @@ describe('Get account balances', () => {
     }, caller: addresses.admin});
 
     expect(res.result.target).toBe(addresses.admin);
-    expect(res.result.balance).toBe(10000900);
+    expect(res.result.balance).toBe(2500000);
   });
 
   it(`should get the unlocked balance for ${addresses.admin}`, async () => {
@@ -112,7 +112,7 @@ describe('Get account balances', () => {
     }, caller: addresses[3]});
 
     expect(res.result.target).toBe(addresses.admin);
-    expect(res.result.balance).toBe(9999900);
+    expect(res.result.balance).toBe(2499000);
   });
 
   it(`should get the balance for ${addresses.user}`, async () => {
@@ -122,7 +122,7 @@ describe('Get account balances', () => {
     }, caller: addresses.admin});
 
     expect(res.result.target).toBe(addresses.user);
-    expect(res.result.balance).toBe(100);
+    expect(res.result.balance).toBe(2500000);
   });
 
   it(`should get an error, account doesn't exists.`, async () => {
@@ -541,7 +541,7 @@ describe('Votes', () => {
   });
 
   it('should fail, vote period is over', () => {
-    swGlobal.block.increment(2000);
+    swGlobal.block.increment(2160);
 
     handler(state, { input: {
       function: 'lock',
@@ -588,7 +588,7 @@ describe('Finalize votes', () => {
     
     handler(state, {input: { function: 'propose', type: 'indicative', note: 'My note'}, caller: addresses.user});
     handler(state, {input: {function: 'vote', id: (state.votes.length - 1), cast: 'yay'}, caller: addresses.user});
-    swGlobal.block.increment(2000);
+    swGlobal.block.increment(2160);
     handler(state, { input: {function: 'finalize', id: (state.votes.length - 1)}, caller: addresses.user});
 
     expect(state.votes[(state.votes.length - 1)].status).toBe('quorumFailed');
@@ -609,7 +609,7 @@ describe('Finalize votes', () => {
 
     const lastVoteId = state.votes.length - 1;
     handler(state, {input: {function: 'vote', id: lastVoteId, cast: 'yay'}, caller: addresses.admin});
-    swGlobal.block.increment(2000);
+    swGlobal.block.increment(2160);
     handler(state, {input: {function: 'finalize', id: lastVoteId}, caller: addresses.user});
 
     expect(state.roles[addresses.admin]).toBe('MAIN');
@@ -868,8 +868,20 @@ describe('Stake on market', () => {
 describe('Disburse market funds', () => {
   const func = 'disburse';
 
+  it('Should fail, market has not passed necessary block height', () => {
+    try {
+      handler(state, { input: {
+        function: func,
+        id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
+      }, caller: addresses.admin });
+    } catch (err) {
+      expect(err.name).toBe('ContractError');
+    }
+  });
+
   it('Should fail, market doesn\'t exist', () => {
     try {
+      swGlobal.block.increment(2160);
       handler(state, { input: {
         function: func,
         id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI9',
@@ -880,6 +892,7 @@ describe('Disburse market funds', () => {
   });
 
   it('Should change status to "passed"', () => {
+
     handler(state, { input: {
       function: func,
       id: 'kQIqCHRXi2CliXyhr6DrzfiemtEBmLQzoh3R1DX7yI8',
@@ -901,17 +914,29 @@ describe('Disburse market funds', () => {
     }
   });
 
+  it('Should tip all token holders', () => {
+      expect(state.balances['KWn-0l96Ss_lHheS1cjDY5N-94SHyxAQO8Wfy1ehPu0']).toBe(2499917);
+  });
+
   // it('Should return all funds during tie', () => {
-  //   expect(state.balances['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA']).toBe(9999980);
+  //   expect(state.balances['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA']).toBe(2498900);
   // });
 
-  // it('Should give correct funds to yay winners', () => {
-  //   expect(state.balances['O6SGGaUbSm72rQO-9A7SGFUIGOiSy8Uih1-zbQmufaU']).toBe(10000442);
-  // });
+  it('Should give correct funds to yay winners', () => {
+    expect(state.balances['O6SGGaUbSm72rQO-9A7SGFUIGOiSy8Uih1-zbQmufaU']).toBe(2500442);
+  });
 
   it('Should give correct funds to nay losers', () => {
-    expect(state.balances['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA']).toBe(9999099);
+    expect(state.balances['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA']).toBe(2499099);
   });
+
+  it('Should keep total supply at 10,000,000', () => {
+    let allBalances = 0;
+    Object.keys(state.balances).forEach(balance => {
+      return allBalances += state.balances[balance];
+    })
+    expect(allBalances).toBe(9998800);
+  })
 
     // it('Should give correct funds to nay winners', () => {
     //   expect(state.balances['aYFm9TP2G0_gVmzn-lCuYPlg2_Cpksq5VBBFEvDoOxA']).toBe(10000900);
