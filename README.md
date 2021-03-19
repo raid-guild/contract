@@ -108,7 +108,7 @@ interface VoteInterface {
 interface MarketInterface {
   marketId?: string;
   start?: number;
-  status?: 'active' | 'quorumFailed' | 'passed' | 'failed';
+  status?: 'active' | 'passed' | 'failed';
   yays?: number;
   nays?: number;
   staked?: StakedInterface[];
