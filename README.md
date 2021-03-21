@@ -1,6 +1,9 @@
 Latest deployment: `4BM86e-zd_XBSY4nFFH3Kz_9GY2jkcEmnxe7CKqONIw`
 
-# Community Contract Specs
+# ConsensusTrade
+Consensus Trade allows users to bet on the social consensus around the validity of assertions made on crypto twitter through the use of permaweb.
+
+# ConsensusTrade Contract Specs
 
 [![Gitopia](https://img.shields.io/endpoint?style=&url=https://gitopia.org/mirror-badge.json)](https://gitopia.org/?#/BPr7vrFduuQqqVMu_tftxsScTKUq9ke0rx4q5C9ieQU/community-contract)
 
